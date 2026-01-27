@@ -6,9 +6,21 @@ EXPECTED_ALL = [
     "SimpleChatModel",
     "BaseLLM",
     "LLM",
+    "LangSmithParams",
     "LanguageModelInput",
     "LanguageModelOutput",
+    "LanguageModelLike",
     "get_tokenizer",
+    "LanguageModelLike",
+    "FakeMessagesListChatModel",
+    "FakeListChatModel",
+    "GenericFakeChatModel",
+    "FakeStreamingListLLM",
+    "FakeListLLM",
+    "ParrotFakeChatModel",
+    "ModelProfile",
+    "ModelProfileRegistry",
+    "is_openai_data_block",
 ]
 
 

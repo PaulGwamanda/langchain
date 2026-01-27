@@ -1,12 +1,13 @@
 """Test transform chain."""
-from typing import Dict
+
+import re
 
 import pytest
 
-from langchain.chains.transform import TransformChain
+from langchain_classic.chains.transform import TransformChain
 
 
-def dummy_transform(inputs: Dict[str, str]) -> Dict[str, str]:
+def dummy_transform(inputs: dict[str, str]) -> dict[str, str]:
     """Transform a dummy input for tests."""
     outputs = inputs
     outputs["greeting"] = f"{inputs['first_name']} {inputs['last_name']} says hello"
@@ -36,5 +37,7 @@ def test_transform_chain_bad_inputs() -> None:
         transform=dummy_transform,
     )
     input_dict = {"name": "Leroy", "last_name": "Jenkins"}
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match=re.escape("Missing some input keys: {'first_name'}")
+    ):
         _ = transform_chain(input_dict)

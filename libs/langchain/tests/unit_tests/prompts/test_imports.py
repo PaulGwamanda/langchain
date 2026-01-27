@@ -1,4 +1,4 @@
-from langchain.prompts import __all__
+from langchain_classic import prompts
 
 EXPECTED_ALL = [
     "AIMessagePromptTemplate",
@@ -13,7 +13,6 @@ EXPECTED_ALL = [
     "MaxMarginalRelevanceExampleSelector",
     "MessagesPlaceholder",
     "NGramOverlapExampleSelector",
-    "PipelinePromptTemplate",
     "Prompt",
     "PromptTemplate",
     "SemanticSimilarityExampleSelector",
@@ -25,4 +24,4 @@ EXPECTED_ALL = [
 
 
 def test_all_imports() -> None:
-    assert set(__all__) == set(EXPECTED_ALL)
+    assert set(prompts.__all__) == set(EXPECTED_ALL)

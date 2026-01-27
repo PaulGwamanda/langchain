@@ -1,4 +1,4 @@
-from langchain.tools.base import __all__
+from langchain_classic.tools.base import __all__
 
 EXPECTED_ALL = [
     "BaseTool",
@@ -6,9 +6,6 @@ EXPECTED_ALL = [
     "StructuredTool",
     "Tool",
     "ToolException",
-    "_SchemaConfig",
-    "_create_subset_model",
-    "_get_filtered_args",
     "create_schema_from_function",
     "tool",
 ]

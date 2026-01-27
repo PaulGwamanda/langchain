@@ -1,20 +1,22 @@
 """Tests for the time-weighted retriever class."""
 
+from collections.abc import Iterable
 from datetime import datetime, timedelta
-from typing import Any, Iterable, List, Optional, Tuple, Type
+from typing import Any
 
 import pytest
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_core.vectorstores import VectorStore
+from typing_extensions import override
 
-from langchain.retrievers.time_weighted_retriever import (
+from langchain_classic.retrievers.time_weighted_retriever import (
     TimeWeightedVectorStoreRetriever,
     _get_hours_passed,
 )
 
 
-def _get_example_memories(k: int = 4) -> List[Document]:
+def _get_example_memories(k: int = 4) -> list[Document]:
     return [
         Document(
             page_content="foo",
@@ -30,80 +32,59 @@ def _get_example_memories(k: int = 4) -> List[Document]:
 class MockVectorStore(VectorStore):
     """Mock invalid vector store."""
 
+    @override
     def add_texts(
         self,
         texts: Iterable[str],
-        metadatas: Optional[List[dict]] = None,
+        metadatas: list[dict] | None = None,
         **kwargs: Any,
-    ) -> List[str]:
-        """Run more texts through the embeddings and add to the vectorstore.
-
-        Args:
-            texts: Iterable of strings to add to the vectorstore.
-            metadatas: Optional list of metadatas associated with the texts.
-            kwargs: vectorstore specific parameters
-
-        Returns:
-            List of ids from adding the texts into the vectorstore.
-        """
+    ) -> list[str]:
         return list(texts)
 
-    async def aadd_texts(
-        self,
-        texts: Iterable[str],
-        metadatas: Optional[List[dict]] = None,
-        **kwargs: Any,
-    ) -> List[str]:
-        """Run more texts through the embeddings and add to the vectorstore."""
-        raise NotImplementedError
-
+    @override
     def similarity_search(
-        self, query: str, k: int = 4, **kwargs: Any
-    ) -> List[Document]:
-        """Return docs most similar to query."""
+        self,
+        query: str,
+        k: int = 4,
+        **kwargs: Any,
+    ) -> list[Document]:
         return []
 
     @classmethod
-    def from_documents(
-        cls: Type["MockVectorStore"],
-        documents: List[Document],
-        embedding: Embeddings,
-        **kwargs: Any,
-    ) -> "MockVectorStore":
-        """Return VectorStore initialized from documents and embeddings."""
-        texts = [d.page_content for d in documents]
-        metadatas = [d.metadata for d in documents]
-        return cls.from_texts(texts, embedding, metadatas=metadatas, **kwargs)
-
-    @classmethod
+    @override
     def from_texts(
-        cls: Type["MockVectorStore"],
-        texts: List[str],
+        cls: type["MockVectorStore"],
+        texts: list[str],
         embedding: Embeddings,
-        metadatas: Optional[List[dict]] = None,
+        metadatas: list[dict] | None = None,
         **kwargs: Any,
     ) -> "MockVectorStore":
-        """Return VectorStore initialized from texts and embeddings."""
         return cls()
 
+    @override
     def _similarity_search_with_relevance_scores(
         self,
         query: str,
         k: int = 4,
         **kwargs: Any,
-    ) -> List[Tuple[Document, float]]:
-        """Return docs and similarity scores, normalized on a scale from 0 to 1.
-
-        0 is dissimilar, 1 is most similar.
-        """
+    ) -> list[tuple[Document, float]]:
         return [(doc, 0.5) for doc in _get_example_memories()]
+
+    async def _asimilarity_search_with_relevance_scores(
+        self,
+        query: str,
+        k: int = 4,
+        **kwargs: Any,
+    ) -> list[tuple[Document, float]]:
+        return self._similarity_search_with_relevance_scores(query, k, **kwargs)
 
 
 @pytest.fixture
 def time_weighted_retriever() -> TimeWeightedVectorStoreRetriever:
     vectorstore = MockVectorStore()
     return TimeWeightedVectorStoreRetriever(
-        vectorstore=vectorstore, memory_stream=_get_example_memories()
+        vectorstore=vectorstore,
+        memory_stream=_get_example_memories(),
     )
 
 
@@ -126,7 +107,9 @@ def test_get_combined_score(
     expected_hours_passed = 2.5
     current_time = datetime(2023, 4, 14, 14, 30)
     combined_score = time_weighted_retriever._get_combined_score(
-        document, vector_salience, current_time
+        document,
+        vector_salience,
+        current_time,
     )
     expected_score = (
         1.0 - time_weighted_retriever.decay_rate
@@ -142,15 +125,45 @@ def test_get_salient_docs(
     want = [(doc, 0.5) for doc in _get_example_memories()]
     assert isinstance(docs_and_scores, dict)
     assert len(docs_and_scores) == len(want)
-    for k, doc in docs_and_scores.items():
+    for doc in docs_and_scores.values():
         assert doc in want
 
 
-def test_get_relevant_documents(
+async def test_aget_salient_docs(
     time_weighted_retriever: TimeWeightedVectorStoreRetriever,
 ) -> None:
     query = "Test query"
-    relevant_documents = time_weighted_retriever.get_relevant_documents(query)
+    docs_and_scores = await time_weighted_retriever.aget_salient_docs(query)
+    want = [(doc, 0.5) for doc in _get_example_memories()]
+    assert isinstance(docs_and_scores, dict)
+    assert len(docs_and_scores) == len(want)
+    for doc in docs_and_scores.values():
+        assert doc in want
+
+
+def test_invoke(
+    time_weighted_retriever: TimeWeightedVectorStoreRetriever,
+) -> None:
+    query = "Test query"
+    relevant_documents = time_weighted_retriever.invoke(query)
+    want = [(doc, 0.5) for doc in _get_example_memories()]
+    assert isinstance(relevant_documents, list)
+    assert len(relevant_documents) == len(want)
+    now = datetime.now()
+    for doc in relevant_documents:
+        # assert that the last_accessed_at is close to now.
+        assert now - timedelta(hours=1) < doc.metadata["last_accessed_at"] <= now
+
+    # assert that the last_accessed_at in the memory stream is updated.
+    for d in time_weighted_retriever.memory_stream:
+        assert now - timedelta(hours=1) < d.metadata["last_accessed_at"] <= now
+
+
+async def test_ainvoke(
+    time_weighted_retriever: TimeWeightedVectorStoreRetriever,
+) -> None:
+    query = "Test query"
+    relevant_documents = await time_weighted_retriever.ainvoke(query)
     want = [(doc, 0.5) for doc in _get_example_memories()]
     assert isinstance(relevant_documents, list)
     assert len(relevant_documents) == len(want)
@@ -169,6 +182,19 @@ def test_add_documents(
 ) -> None:
     documents = [Document(page_content="test_add_documents document")]
     added_documents = time_weighted_retriever.add_documents(documents)
+    assert isinstance(added_documents, list)
+    assert len(added_documents) == 1
+    assert (
+        time_weighted_retriever.memory_stream[-1].page_content
+        == documents[0].page_content
+    )
+
+
+async def test_aadd_documents(
+    time_weighted_retriever: TimeWeightedVectorStoreRetriever,
+) -> None:
+    documents = [Document(page_content="test_add_documents document")]
+    added_documents = await time_weighted_retriever.aadd_documents(documents)
     assert isinstance(added_documents, list)
     assert len(added_documents) == 1
     assert (

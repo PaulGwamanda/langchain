@@ -1,6 +1,5 @@
-from langchain_core.pydantic_v1 import BaseModel, Field
-
-from langchain.utils.openai_functions import convert_pydantic_to_openai_function
+from langchain_core.utils.function_calling import convert_to_openai_function
+from pydantic import BaseModel, Field
 
 
 def test_convert_pydantic_to_openai_function() -> None:
@@ -10,18 +9,15 @@ def test_convert_pydantic_to_openai_function() -> None:
         key: str = Field(..., description="API key")
         days: int = Field(default=0, description="Number of days to forecast")
 
-    actual = convert_pydantic_to_openai_function(Data)
+    actual = convert_to_openai_function(Data)
     expected = {
         "name": "Data",
         "description": "The data to return.",
         "parameters": {
-            "title": "Data",
-            "description": "The data to return.",
             "type": "object",
             "properties": {
-                "key": {"title": "Key", "description": "API key", "type": "string"},
+                "key": {"description": "API key", "type": "string"},
                 "days": {
-                    "title": "Days",
                     "description": "Number of days to forecast",
                     "default": 0,
                     "type": "integer",
@@ -45,34 +41,29 @@ def test_convert_pydantic_to_openai_function_nested() -> None:
 
         data: Data
 
-    actual = convert_pydantic_to_openai_function(Model)
+    actual = convert_to_openai_function(Model)
     expected = {
         "name": "Model",
         "description": "The model to return.",
         "parameters": {
-            "title": "Model",
-            "description": "The model to return.",
             "type": "object",
             "properties": {
                 "data": {
-                    "title": "Data",
                     "description": "The data to return.",
                     "type": "object",
                     "properties": {
                         "key": {
-                            "title": "Key",
                             "description": "API key",
                             "type": "string",
                         },
                         "days": {
-                            "title": "Days",
                             "description": "Number of days to forecast",
                             "default": 0,
                             "type": "integer",
                         },
                     },
                     "required": ["key"],
-                }
+                },
             },
             "required": ["data"],
         },

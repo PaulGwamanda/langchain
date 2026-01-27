@@ -1,106 +1,141 @@
 name: "\U0001F41B Bug Report"
-description: Submit a bug report to help us improve LangChain. To report a security issue, please instead use the security option below.
-labels: ["02 Bug Report"]
+description: Report a bug in LangChain. To report a security issue, please instead use the security option (below). For questions, please use the LangChain forum (below).
+labels: ["bug"]
+type: bug
 body:
   - type: markdown
     attributes:
-      value: >
-        Thank you for taking the time to file a bug report. Before creating a new
-        issue, please make sure to take a few moments to check the issue tracker
-        for existing issues about the bug.
+      value: |
+        Thank you for taking the time to file a bug report.
 
-  - type: textarea
-    id: system-info
-    attributes:
-      label: System Info
-      description: Please share your system info with us.
-      placeholder: LangChain version, platform, python version, ...
-    validations:
-      required: true
+        For usage questions, feature requests and general design questions, please use the [LangChain Forum](https://forum.langchain.com/).
 
-  - type: textarea
-    id: who-can-help
+        Check these before submitting to see if your issue has already been reported, fixed or if there's another way to solve your problem:
+
+        * [Documentation](https://docs.langchain.com/oss/python/langchain/overview),
+        * [API Reference Documentation](https://reference.langchain.com/python/),
+        * [LangChain ChatBot](https://chat.langchain.com/)
+        * [GitHub search](https://github.com/langchain-ai/langchain),
+        * [LangChain Forum](https://forum.langchain.com/),
+  - type: checkboxes
+    id: checks
     attributes:
-      label: Who can help?
+      label: Checked other resources
+      description: Please confirm and check all the following options.
+      options:
+        - label: This is a bug, not a usage question.
+          required: true
+        - label: I added a clear and descriptive title that summarizes this issue.
+          required: true
+        - label: I used the GitHub search to find a similar question and didn't find it.
+          required: true
+        - label: I am sure that this is a bug in LangChain rather than my code.
+          required: true
+        - label: The bug is not resolved by updating to the latest stable version of LangChain (or the specific integration package).
+          required: true
+        - label: This is not related to the langchain-community package.
+          required: true
+        - label: I posted a self-contained, minimal, reproducible example. A maintainer can copy it and run it AS IS.
+          required: true
+  - type: checkboxes
+    id: package
+    attributes:
+      label: Package (Required)
       description: |
-        Your issue will be replied to more quickly if you can figure out the right person to tag with @
-        If you know how to use git blame, that is the easiest way, otherwise, here is a rough guide of **who to tag**.
+        Which `langchain` package(s) is this bug related to? Select at least one.
 
-        The core maintainers strive to read all issues, but tagging them will help them prioritize.
+        Note that if the package you are reporting for is not listed here, it is not in this repository (e.g. `langchain-google-genai` is in [`langchain-ai/langchain-google`](https://github.com/langchain-ai/langchain-google/)).
 
-        Please tag fewer than 3 people.
-
-        @hwchase17 - project lead
-
-        Tracing / Callbacks
-        - @agola11
-
-        Async
-        - @agola11
-
-        DataLoader Abstractions
-        - @eyurtsev
-
-        LLM/Chat Wrappers
-        - @hwchase17
-        - @agola11
-
-        Tools / Toolkits
-        - ...
-
-      placeholder: "@Username ..."
-
-  - type: checkboxes
-    id: information-scripts-examples
-    attributes:
-      label: Information
-      description: "The problem arises when using:"
+        Please report issues for other packages to their respective repositories.
       options:
-        - label: "The official example notebooks/scripts"
-        - label: "My own modified scripts"
-
-  - type: checkboxes
-    id: related-components
-    attributes:
-      label: Related Components
-      description: "Select the components related to the issue (if applicable):"
-      options:
-        - label: "LLMs/Chat Models"
-        - label: "Embedding Models"
-        - label: "Prompts / Prompt Templates / Prompt Selectors"
-        - label: "Output Parsers"
-        - label: "Document Loaders"
-        - label: "Vector Stores / Retrievers"
-        - label: "Memory"
-        - label: "Agents / Agent Executors"
-        - label: "Tools / Toolkits"
-        - label: "Chains"
-        - label: "Callbacks/Tracing"
-        - label: "Async"
-
+        - label: langchain
+        - label: langchain-openai
+        - label: langchain-anthropic
+        - label: langchain-classic
+        - label: langchain-core
+        - label: langchain-model-profiles
+        - label: langchain-tests
+        - label: langchain-text-splitters
+        - label: langchain-chroma
+        - label: langchain-deepseek
+        - label: langchain-exa
+        - label: langchain-fireworks
+        - label: langchain-groq
+        - label: langchain-huggingface
+        - label: langchain-mistralai
+        - label: langchain-nomic
+        - label: langchain-ollama
+        - label: langchain-perplexity
+        - label: langchain-prompty
+        - label: langchain-qdrant
+        - label: langchain-xai
+        - label: Other / not sure / general
   - type: textarea
     id: reproduction
     validations:
       required: true
     attributes:
-      label: Reproduction
+      label: Reproduction Steps / Example Code (Python)
       description: |
-        Please provide a [code sample](https://stackoverflow.com/help/minimal-reproducible-example) that reproduces the problem you ran into. It can be a Colab link or just a code snippet.
-        If you have code snippets, error messages, stack traces please provide them here as well.
-        Important! Use code tags to correctly format your code. See https://help.github.com/en/github/writing-on-github/creating-and-highlighting-code-blocks#syntax-highlighting
-        Avoid screenshots when possible, as they are hard to read and (more importantly) don't allow others to copy-and-paste your code.
+        Please add a self-contained, [minimal, reproducible, example](https://stackoverflow.com/help/minimal-reproducible-example) with your use case.
 
+        If a maintainer can copy it, run it, and see it right away, there's a much higher chance that you'll be able to get help.
+
+        **Important!**
+
+        * Avoid screenshots, as they are hard to read and (more importantly) don't allow others to copy-and-paste your code.
+        * Reduce your code to the minimum required to reproduce the issue if possible.
+
+        (This will be automatically formatted into code, so no need for backticks.)
+      render: python
       placeholder: |
-        Steps to reproduce the behavior:
+        from langchain_core.runnables import RunnableLambda
 
-          1.
-          2.
-          3.
+        def bad_code(inputs) -> int:
+          raise NotImplementedError('For demo purpose')
 
+          chain = RunnableLambda(bad_code)
+          chain.invoke('Hello!')
   - type: textarea
-    id: expected-behavior
+    attributes:
+      label: Error Message and Stack Trace (if applicable)
+      description: |
+        If you are reporting an error, please copy and paste the full error message and
+        stack trace.
+        (This will be automatically formatted into code, so no need for backticks.)
+      render: shell
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: |
+        What is the problem, question, or error?
+
+        Write a short description telling what you are doing, what you expect to happen, and what is currently happening.
+      placeholder: |
+        * I'm trying to use the `langchain` library to do X.
+        * I expect to see Y.
+        * Instead, it does Z.
     validations:
       required: true
+  - type: textarea
+    id: system-info
     attributes:
-      label: Expected behavior
-      description: "A clear and concise description of what you would expect to happen."
+      label: System Info
+      description: |
+        Please share your system info with us.
+
+        Run the following command in your terminal and paste the output here:
+
+        `python -m langchain_core.sys_info`
+
+        or if you have an existing python interpreter running:
+
+        ```python
+        from langchain_core import sys_info
+        sys_info.print_sys_info()
+        ```
+      placeholder: |
+        python -m langchain_core.sys_info
+    validations:
+      required: true
